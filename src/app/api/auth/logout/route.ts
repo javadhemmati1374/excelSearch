@@ -1,12 +1,11 @@
 // src/app/api/auth/logout/route.ts
 
 import { NextResponse } from "next/server";
-// import { getIronSession } from "iron-session"; // <<-- این خط را حذف یا کامنت کنید
-import { SessionData, getSession } from "@/lib/session"; // <<-- تغییر: SessionData و getSession
+import { getSession } from "@/lib/session";
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const session = await getSession(); // <<-- تغییر مهم اینجا است: بدون ورودی request
+    const session = await getSession();
     session.destroy(); // Clear session data
 
     return NextResponse.json({ message: "خروج موفقیت‌آمیز." }, { status: 200 });

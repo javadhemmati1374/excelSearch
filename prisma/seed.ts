@@ -1,7 +1,16 @@
 import { PrismaClient } from "../src/generated/prisma";
-import bcrypt from "bcryptjs"; // برای هش کردن رمز عبور
+import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+// مدیریت گلوبال PrismaClient مشابه سایر فایل‌ها
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+const prisma = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV === "development") {
+  global.prisma = prisma;
+}
 
 async function main() {
   // Check if admin user already exists
@@ -29,5 +38,8 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    // فقط در محیط production disconnect کنیم
+    if (process.env.NODE_ENV === "production") {
+      await prisma.$disconnect();
+    }
   });

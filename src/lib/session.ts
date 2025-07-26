@@ -1,12 +1,12 @@
-import { getIronSession, IronSessionOptions } from "iron-session";
-import { cookies } from "next/headers"; // <<-- این خط اضافه شده است
+import { getIronSession, SessionOptions } from "iron-session";
+import { cookies } from "next/headers";
 
 export interface SessionData {
   isAdmin: boolean;
   username: string;
 }
 
-export const sessionOptions: IronSessionOptions = {
+export const sessionOptions: SessionOptions = {
   cookieName: "phone_data_session",
   password: process.env.SECRET_COOKIE_PASSWORD as string,
   cookieOptions: {
@@ -14,9 +14,13 @@ export const sessionOptions: IronSessionOptions = {
   },
 };
 
-// تابع getSession اصلاح شده برای Next.js App Router
+// تابع getSession اصلاح شده برای Next.js 15
 export async function getSession() {
-  // <<-- ورودی Request حذف شده است
-  const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+  // در Next.js 15، cookies() باید await شود
+  const cookieStore = await cookies();
+  const session = await getIronSession<SessionData>(
+    cookieStore,
+    sessionOptions
+  );
   return session;
 }

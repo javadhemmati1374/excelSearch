@@ -106,7 +106,7 @@ export function FileManagementSection() {
       queryClient.invalidateQueries({ queryKey: ["searchCounts"] });
       alert("فایل با موفقیت حذف شد.");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       alert(`خطا در حذف فایل: ${err.message}`);
     },
   });
@@ -170,7 +170,7 @@ export function FileManagementSection() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteFile(file.id)}
-                          disabled={deleteMutation.isLoading}
+                          disabled={deleteMutation.isPending}
                           aria-label={`حذف فایل ${file.fileName}`}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -246,7 +246,7 @@ export function FileManagementSection() {
                         size="sm"
                         className="w-full cursor-pointer"
                         onClick={() => handleDeleteFile(file.id)}
-                        disabled={deleteMutation.isLoading}
+                        disabled={deleteMutation.isPending}
                         aria-label={`حذف فایل ${file.fileName}`}
                       >
                         <Trash2 className="h-4 w-4" />

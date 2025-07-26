@@ -1,7 +1,7 @@
 // src/components/dashboard/SearchSection.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react"; // <<-- Copy Icon حذف شد
+import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 
 interface PhoneDataResult {
   id: string;
@@ -37,7 +37,6 @@ interface PhoneDataResult {
 export function SearchSection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const queryClient = useQueryClient();
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -83,8 +82,6 @@ export function SearchSection() {
     enabled: !!debouncedSearchTerm,
     staleTime: 0,
   });
-
-  // <<-- تابع copyToClipboard کاملاً حذف شد -->>
 
   return (
     <Card>
@@ -144,10 +141,7 @@ export function SearchSection() {
                     {searchResults.map((result) => (
                       <TableRow key={result.id}>
                         <TableCell className="font-medium" scope="row">
-                          {" "}
-                          {/* <<-- flex items-center gap-2 حذف شد -->> */}
                           {result.telNum}
-                          {/* <<-- دکمه کپی حذف شد -->> */}
                         </TableCell>
                         <TableCell>{result.customTitle || "-"}</TableCell>
                         <TableCell>
@@ -177,7 +171,6 @@ export function SearchSection() {
                           className="text-lg font-bold text-primary"
                         >
                           {result.telNum}
-                          {/* <<-- دکمه کپی حذف شد -->> */}
                         </p>
                         {result.customTitle && (
                           <span className="text-sm text-muted-foreground bg-accent rounded-full px-3 py-1">

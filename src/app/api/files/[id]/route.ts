@@ -1,14 +1,24 @@
 // src/app/api/files/[id]/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../../generated/prisma/client";
+import { PrismaClient } from "../../../../generated/prisma";
 
-const prisma = new PrismaClient();
+// مدیریت گلوبال PrismaClient
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+const prisma = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV === "development") {
+  global.prisma = prisma;
+}
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const fileId = params.id;
+  // در Next.js 15، params باید await شود
+  const { id: fileId } = await params;
 
   try {
     // حذف فایل والد، که باعث حذف خودکار PhoneData های مرتبط هم میشود (onDelete: Cascade)
@@ -22,7 +32,6 @@ export async function DELETE(
   } catch (error) {
     console.error(`Error deleting file ${fileId}:`, error);
     return NextResponse.json({ message: "خطا در حذف فایل." }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // نیازی به disconnect در نمونه گلوبال نیست
 }

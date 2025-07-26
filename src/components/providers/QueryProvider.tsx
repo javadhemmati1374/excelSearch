@@ -11,8 +11,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000, // داده ها بعد از 5 ثانیه stale میشوند
-            refetchOnWindowFocus: false, // برای سادگی، رفرش خودکار با فوکوس را غیرفعال میکنیم
+            staleTime: 60 * 1000, // 1 minute
+            retry: 1,
           },
         },
       })
@@ -21,8 +21,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />{" "}
-      {/* ابزارهای توسعه react-query */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

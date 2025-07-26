@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress"; // pnpm dlx shadcn-ui@latest add progress
+import { Progress } from "@/components/ui/progress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function UploadSection() {
@@ -22,7 +22,7 @@ export function UploadSection() {
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient(); // برای اینولیدیت کردن کش لیست فایل ها
+  const queryClient = useQueryClient();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -65,11 +65,7 @@ export function UploadSection() {
       const promise = new Promise((resolve, reject) => {
         xhr.onload = () => {
           if (xhr.status === 200) {
-            setUploadStatus("processing"); // فایل آپلود شده، حالا سرور در حال پردازش است
-            // Server might send a "processing" status and then later a "completed" via polling or webhook
-            // For simplicity, we assume if upload is 200, processing will start.
-            // A better approach for huge files would be to return immediately and process in background job.
-            // For now, we wait for the full server response.
+            setUploadStatus("processing");
             resolve(JSON.parse(xhr.responseText));
           } else {
             reject(JSON.parse(xhr.responseText));
@@ -80,17 +76,16 @@ export function UploadSection() {
       });
       return promise;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: { message?: string }) => {
       setUploadStatus("success");
       setSelectedFile(null);
       if (fileInputRef.current) {
-        fileInputRef.current.value = ""; // Clear file input
+        fileInputRef.current.value = "";
       }
       alert(data.message || "فایل با موفقیت آپلود و پردازش شد.");
-      // Invalidate cache for uploaded files list to refetch
       queryClient.invalidateQueries({ queryKey: ["uploadedFiles"] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setUploadStatus("error");
       setErrorMessage(error.message || "خطا در پردازش فایل.");
       console.error("Upload Error:", error);
@@ -129,10 +124,9 @@ export function UploadSection() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                // <<-- تغییرات مهم اینجا هستند -->>
-                strokeWidth="2" // <<-- از stroke-width به strokeWidth
-                strokeLinecap="round" // <<-- از stroke-linecap به strokeLinecap
-                strokeLinejoin="round" // <<-- از stroke-linejoin به strokeLinejoin
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
                 <path d="M12 13v8" />
                 <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
@@ -186,9 +180,9 @@ export function UploadSection() {
           <Button
             type="submit"
             className="w-full"
-            disabled={!selectedFile || uploadMutation.isLoading}
+            disabled={!selectedFile || uploadMutation.isPending}
           >
-            {uploadMutation.isLoading ? "در حال آپلود..." : "شروع آپلود"}
+            {uploadMutation.isPending ? "در حال آپلود..." : "شروع آپلود"}
           </Button>
         </form>
       </CardContent>

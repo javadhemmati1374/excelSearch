@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === "development") {
 // request.formData() به صورت خودکار بدنه درخواست را parse می‌کند.
 
 export async function POST(request: Request) {
-  let uploadedFileId: string | number | undefined; // برای ذخیره ID فایل آپلود شده در صورت بروز خطا
+  let uploadedFileId: string | undefined; // تغییر: حذف number از type
 
   try {
     const formData = await request.formData();
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         status: "processing",
       },
     });
-    uploadedFileId = uploadedFile.id; // ذخیره ID برای آپدیت‌های بعدی یا مدیریت خطا
+    uploadedFileId = uploadedFile.id; // این حالا string است
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const stream = Readable.from(buffer); // تبدیل Buffer به ReadableStream
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     }
 
     const BATCH_SIZE = 5000;
-    const allRecords: any[] = []; // آرایه‌ای برای نگهداری تمام رکوردهای استخراج شده
+    const allRecords: Record<string, string | null | number>[] = []; // آرایه‌ای برای نگهداری تمام رکوردهای استخراج شده
 
     // 4. استخراج رکوردها از شیت به صورت سینکرونوس
     // این حلقه باید سینکرونوس باشد تا تمام داده ها قبل از شروع Batch Insert جمع آوری شوند.
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
     }
 
     await prisma.uploadedFile.update({
-      where: { id: uploadedFileId! }, // استفاده از ID ذخیره شده
+      where: { id: uploadedFileId }, // حالا مطمئناً string است
       data: {
         recordCount: totalRecordsInserted, // تعداد رکوردهای واقعاً درج شده
         status: finalStatus,
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("خطا در آپلود/پردازش فایل:", error);
 
     // اگر خطایی رخ داد و فایل اولیه در دیتابیس ثبت شده بود، وضعیت آن را 'failed' می‌کنیم
@@ -209,9 +209,11 @@ export async function POST(request: Request) {
       }
     }
 
+    const errorMessage =
+      error instanceof Error ? error.message : "خطای ناشناخته";
     return NextResponse.json(
       {
-        message: `خطا در پردازش فایل: ${error.message || "خطای ناشناخته"}`,
+        message: `خطا در پردازش فایل: ${errorMessage}`,
         status: "error",
       },
       { status: 500 }

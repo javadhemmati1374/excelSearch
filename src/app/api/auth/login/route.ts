@@ -1,12 +1,11 @@
 // src/app/api/auth/login/route.ts
 
 import { NextResponse } from "next/server";
-// import { getIronSession } from "iron-session"; // <<-- دیگر نیازی به این نیست
-import { SessionData, getSession } from "@/lib/session"; // <<-- تغییر: SessionData و getSession
-import { PrismaClient } from "../../../../generated/prisma"; // <<-- تغییر: مسیر PrismaClient (اگر قبلا انجام داده اید)
+import { getSession } from "@/lib/session";
+import { PrismaClient } from "../../../../generated/prisma";
 import bcrypt from "bcryptjs";
 
-// مدیریت گلوبال PrismaClient (همانطور که در پاسخ قبلی توضیح داده شد)
+// مدیریت گلوبال PrismaClient
 declare global {
   var prisma: PrismaClient | undefined;
 }
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     // Set session
-    const session = await getSession(); // <<-- تغییر: بدون ورودی request
+    const session = await getSession();
     session.isAdmin = true;
     session.username = user.username;
     await session.save();
@@ -62,5 +61,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-  // نیازی به disconnect در نمونه گلوبال نیست.
 }

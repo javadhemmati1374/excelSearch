@@ -1,13 +1,23 @@
 // src/app/api/upload/route.ts
 
 import { NextResponse } from "next/server";
-// مسیر صحیح PrismaClient با توجه به تنظیمات 'output' در schema.prisma
 import { PrismaClient } from "../../../../src/generated/prisma";
 import ExcelJS from "exceljs";
-import { Readable } from "stream"; // برای تبدیل Buffer به ReadableStream
+import { Readable } from "stream";
 
-// بهترین روش برای مدیریت PrismaClient در Next.js App Router
-// این کار از ایجاد نمونه‌های متعدد و خطاهای "too many connections" جلوگیری می‌کند.
+// Interface برای Type Safety
+interface PhoneDataInput {
+  fileId: string;
+  telNum: string;
+  customTitle?: string | null;
+  classificationName?: string | null;
+  parentClassificationName?: string | null;
+  city?: string | null;
+  address?: string | null;
+  regCity?: string | null;
+  regProvince?: string | null;
+}
+
 declare global {
   var prisma: PrismaClient | undefined;
 }
@@ -18,11 +28,8 @@ if (process.env.NODE_ENV === "development") {
   global.prisma = prisma;
 }
 
-// export const config با bodyParser: false برای App Router لازم نیست.
-// request.formData() به صورت خودکار بدنه درخواست را parse می‌کند.
-
 export async function POST(request: Request) {
-  let uploadedFileId: string | undefined; // تغییر: حذف number از type
+  let uploadedFileId: string | undefined;
 
   try {
     const formData = await request.formData();
@@ -38,24 +45,24 @@ export async function POST(request: Request) {
     const fileName = file.name;
     const fileSize = file.size;
 
-    // 1. ذخیره اطلاعات اولیه فایل در دیتابیس با وضعیت "processing"
+    // 1. ذخیره اطلاعات اولیه فایل
     const uploadedFile = await prisma.uploadedFile.create({
       data: {
         fileName: fileName,
         fileSize: fileSize,
-        recordCount: 0, // فعلاً صفر، بعداً آپدیت می‌شود
+        recordCount: 0,
         status: "processing",
       },
     });
-    uploadedFileId = uploadedFile.id; // این حالا string است
+    uploadedFileId = uploadedFile.id;
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const stream = Readable.from(buffer); // تبدیل Buffer به ReadableStream
+    const stream = Readable.from(buffer);
 
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.read(stream);
 
-    const worksheet = workbook.getWorksheet(1); // فرض می‌کنیم داده‌ها در اولین شیت هستند
+    const worksheet = workbook.getWorksheet(1);
     if (!worksheet) {
       if (uploadedFileId) {
         await prisma.uploadedFile.update({
@@ -70,10 +77,9 @@ export async function POST(request: Request) {
     }
 
     // 2. استخراج و نگاشت هدرها
-    const headers: { [key: number]: string } = {}; // کلید باید از نوع number باشد (شماره ستون)
+    const headers: { [key: number]: string } = {};
     worksheet.getRow(1).eachCell({ includeEmpty: false }, (cell, colNumber) => {
       const headerText = cell.text.trim();
-      // نگاشت نام ستون‌های اکسل به نام فیلدهای مدل Prisma
       switch (headerText) {
         case "TelNum":
           headers[colNumber] = "telNum";
@@ -99,9 +105,8 @@ export async function POST(request: Request) {
         case "RegProvince":
           headers[colNumber] = "regProvince";
           break;
-        // موارد دیگر را در صورت نیاز اضافه کنید
         default:
-          break; // ستون‌های نامعتبر را نادیده بگیرید
+          break;
       }
     });
 
@@ -123,62 +128,86 @@ export async function POST(request: Request) {
     }
 
     const BATCH_SIZE = 5000;
-    const allRecords: Record<string, string | null | number>[] = []; // آرایه‌ای برای نگهداری تمام رکوردهای استخراج شده
+    const allRecords: PhoneDataInput[] = []; // ✅ Type اصلاح شده
 
-    // 4. استخراج رکوردها از شیت به صورت سینکرونوس
-    // این حلقه باید سینکرونوس باشد تا تمام داده ها قبل از شروع Batch Insert جمع آوری شوند.
+    // 4. استخراج رکوردها
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      if (rowNumber === 1) return; // هدر را رد کنید
+      if (rowNumber === 1) return;
 
-      const rowData: { [key: string]: string | null | number } = {
-        fileId: uploadedFile.id, // اضافه کردن fileId
+      const rowData: PhoneDataInput = {
+        fileId: uploadedFile.id,
+        telNum: "",
       };
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         const headerName = headers[colNumber];
         if (headerName) {
-          rowData[headerName] = cell.value ? String(cell.value).trim() : null;
+          const cellValue = cell.value ? String(cell.value).trim() : null;
+
+          switch (headerName) {
+            case "telNum":
+              rowData.telNum = cellValue || "";
+              break;
+            case "customTitle":
+              rowData.customTitle = cellValue;
+              break;
+            case "classificationName":
+              rowData.classificationName = cellValue;
+              break;
+            case "parentClassificationName":
+              rowData.parentClassificationName = cellValue;
+              break;
+            case "city":
+              rowData.city = cellValue;
+              break;
+            case "address":
+              rowData.address = cellValue;
+              break;
+            case "regCity":
+              rowData.regCity = cellValue;
+              break;
+            case "regProvince":
+              rowData.regProvince = cellValue;
+              break;
+          }
         }
       });
 
-      // اطمینان از وجود telNum
       if (!rowData.telNum) {
-        // console.warn(`ردیف ${rowNumber} به دلیل نبود TelNum نادیده گرفته شد.`);
         return;
       }
 
-      allRecords.push(rowData); // اضافه کردن رکورد به آرایه اصلی
+      allRecords.push(rowData);
     });
 
     let totalRecordsInserted = 0;
     let failedProcessing = false;
 
-    // 5. درج رکوردها در دیتابیس به صورت Batch (خارج از حلقه eachRow)
+    // 5. درج رکوردها به صورت Batch
     for (let i = 0; i < allRecords.length; i += BATCH_SIZE) {
       const batch = allRecords.slice(i, i + BATCH_SIZE);
       try {
         const result = await prisma.phoneData.createMany({
-          data: batch,
-          skipDuplicates: true, // اگر شماره تکراری بود، از آن صرف نظر کند
+          data: batch, // ✅ حالا Type مطابقت دارد
+          skipDuplicates: true,
         });
-        totalRecordsInserted += result.count; // شمارش رکوردهای موفقیت‌آمیز
+        totalRecordsInserted += result.count;
       } catch (batchError) {
         console.error(`خطا در درج بچ (شروع از ایندکس ${i}):`, batchError);
-        failedProcessing = true; // نشانگر بروز خطا در حداقل یک بچ
-        // اینجا می‌توانید تصمیم بگیرید که آیا آپلود کلاً Fail شود یا با موفقیت جزئی ادامه یابد.
+        failedProcessing = true;
       }
     }
 
-    // 6. به‌روزرسانی وضعیت و تعداد رکوردهای فایل آپلود شده
+    // 6. به‌روزرسانی وضعیت فایل
     let finalStatus = "completed";
     if (failedProcessing) {
-      finalStatus = "partial_success"; // یا 'failed' اگر هیچ رکوردی درج نشده باشد
+      finalStatus = "partial_success";
     }
 
     await prisma.uploadedFile.update({
-      where: { id: uploadedFileId }, // حالا مطمئناً string است
+      where: { id: uploadedFileId },
       data: {
-        recordCount: totalRecordsInserted, // تعداد رکوردهای واقعاً درج شده
+        recordCount: totalRecordsInserted,
         status: finalStatus,
       },
     });
@@ -194,7 +223,6 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error("خطا در آپلود/پردازش فایل:", error);
 
-    // اگر خطایی رخ داد و فایل اولیه در دیتابیس ثبت شده بود، وضعیت آن را 'failed' می‌کنیم
     if (uploadedFileId) {
       try {
         await prisma.uploadedFile.update({
@@ -202,10 +230,7 @@ export async function POST(request: Request) {
           data: { status: "failed" },
         });
       } catch (updateError) {
-        console.error(
-          "خطا در به‌روزرسانی وضعیت فایل به 'failed':",
-          updateError
-        );
+        console.error("خطا در به‌روزرسانی وضعیت فایل:", updateError);
       }
     }
 
@@ -219,6 +244,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-  // با استفاده از نمونه گلوبال Prisma، نیازی به prisma.$disconnect() در نهایت نیست.
-  // Prisma خودش connection pooling را مدیریت می‌کند.
 }

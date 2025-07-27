@@ -1,7 +1,7 @@
 // src/app/api/upload/route.ts
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../../src/generated/prisma";
+import { PrismaClient } from "@/generated/prisma";
 import ExcelJS from "exceljs";
 import { Readable } from "stream";
 

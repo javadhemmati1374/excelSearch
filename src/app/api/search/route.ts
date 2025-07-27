@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 // <<-- تغییر: مسیر صحیح PrismaClient -->>
-import { PrismaClient } from "../../../../src/generated/prisma"; // مسیر نسبی از src/app/api/search/route.ts
+import { PrismaClient } from "@/generated/prisma"; // مسیر نسبی از src/app/api/search/route.ts
 
 // <<-- تغییر: اضافه کردن مدیریت گلوبال PrismaClient -->>
 declare global {

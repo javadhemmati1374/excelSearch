@@ -1,18 +1,18 @@
 // src/app/api/search/route.ts
 
 import { NextResponse } from "next/server";
-// <<-- تغییر: مسیر صحیح PrismaClient -->>
-import { PrismaClient } from "../../../../src/generated/prisma"; // مسیر نسبی از src/app/api/search/route.ts
+import { PrismaClient } from "@/generated/prisma";
 
-// <<-- تغییر: اضافه کردن مدیریت گلوبال PrismaClient -->>
+// مدیریت گلوبال PrismaClient
 declare global {
-  var prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var
+  var __globalPrisma: PrismaClient | undefined;
 }
 
-const prisma = global.prisma || new PrismaClient();
+const prisma = global.__globalPrisma || new PrismaClient();
 
 if (process.env.NODE_ENV === "development") {
-  global.prisma = prisma;
+  global.__globalPrisma = prisma;
 }
 
 export async function GET(request: Request) {
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   try {
     const results = await prisma.phoneData.findMany({
       where: {
-        // <<-- تغییر: برای جستجوی "بخشی از شماره" از contains استفاده می‌کنیم -->>
+        // برای جستجوی "بخشی از شماره" از contains استفاده می‌کنیم
         // و برای اینکه جستجو Case-insensitive باشد (حروف بزرگ و کوچک تفاوتی نداشته باشند)،
         // می‌توانید از mode: 'insensitive' استفاده کنید.
         telNum: {
@@ -54,6 +54,5 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-  // <<-- تغییر: حذف finally و prisma.$disconnect() -->>
   // نیازی به disconnect در نمونه گلوبال نیست.
 }

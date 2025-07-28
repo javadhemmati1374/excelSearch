@@ -14,6 +14,13 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+// تعریف interface برای پاسخ API
+interface UploadResponse {
+  message?: string;
+  fileId?: string;
+  status?: string;
+}
+
 export function UploadSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -41,7 +48,7 @@ export function UploadSection() {
     }
   };
 
-  const uploadMutation = useMutation({
+  const uploadMutation = useMutation<UploadResponse, Error, File>({
     mutationFn: async (file: File) => {
       setUploadStatus("uploading");
       setUploadProgress(0);
@@ -62,7 +69,7 @@ export function UploadSection() {
         }
       };
 
-      const promise = new Promise((resolve, reject) => {
+      return new Promise<UploadResponse>((resolve, reject) => {
         xhr.onload = () => {
           if (xhr.status === 200) {
             setUploadStatus("processing");
@@ -74,9 +81,8 @@ export function UploadSection() {
         xhr.onerror = () => reject({ message: "خطای شبکه یا سرور." });
         xhr.send(formData);
       });
-      return promise;
     },
-    onSuccess: (data: { message?: string }) => {
+    onSuccess: (data) => {
       setUploadStatus("success");
       setSelectedFile(null);
       if (fileInputRef.current) {
@@ -85,7 +91,7 @@ export function UploadSection() {
       alert(data.message || "فایل با موفقیت آپلود و پردازش شد.");
       queryClient.invalidateQueries({ queryKey: ["uploadedFiles"] });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       setUploadStatus("error");
       setErrorMessage(error.message || "خطا در پردازش فایل.");
       console.error("Upload Error:", error);

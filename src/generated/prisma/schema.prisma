@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model UploadedFile {
+  id          String      @id @default(cuid())
+  fileName    String
+  fileSize    Int // Size in bytes
+  recordCount Int
+  uploadDate  DateTime    @default(now())
+  status      String // e.g., "completed", "processing", "failed"
+  phoneData   PhoneData[]
+}
+
+model PhoneData {
+  id                       String  @id @default(cuid())
+  fileId                   String
+  telNum                   String
+  customTitle              String? // Optional field, can be null
+  classificationName       String?
+  parentClassificationName String?
+  city                     String?
+  address                  String?
+  regCity                  String?
+  regProvince              String?
+
+  uploadedFile UploadedFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([telNum]) // Add index for fast search on telNum
+}

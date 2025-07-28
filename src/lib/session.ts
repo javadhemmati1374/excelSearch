@@ -11,6 +11,9 @@ export const sessionOptions: SessionOptions = {
   password: process.env.SECRET_COOKIE_PASSWORD as string,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    sameSite: "lax",
   },
 };
 

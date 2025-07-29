@@ -36,11 +36,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body className={`${inter.className} ${vazirmatn.className}`}>
-        <QueryProvider>
-          {" "}
-          {/* QueryProvider را اینجا اضافه میکنیم */}
-          {children}
-        </QueryProvider>
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );

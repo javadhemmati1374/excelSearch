@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.13.0
+ * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.13.0",
+  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -174,8 +174,8 @@ const config = {
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
-  "clientVersion": "6.12.0",
-  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
+  "clientVersion": "6.13.0",
+  "engineVersion": "361e86d0ea4987e9f53a565309b3eed797a6bcbd",
   "datasourceNames": [
     "db"
   ],
@@ -189,8 +189,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id       Int    @id @default(autoincrement())\n  username String @unique\n  password String\n}\n\nmodel UploadedFile {\n  id          String      @id @default(cuid())\n  fileName    String\n  fileSize    Int // Size in bytes\n  recordCount Int\n  uploadDate  DateTime    @default(now())\n  status      String // e.g., \"completed\", \"processing\", \"failed\"\n  phoneData   PhoneData[]\n}\n\nmodel PhoneData {\n  id                       String  @id @default(cuid())\n  fileId                   String\n  telNum                   String\n  customTitle              String? // Optional field, can be null\n  classificationName       String?\n  parentClassificationName String?\n  city                     String?\n  address                  String?\n  regCity                  String?\n  regProvince              String?\n\n  uploadedFile UploadedFile @relation(fields: [fileId], references: [id], onDelete: Cascade)\n\n  @@index([telNum]) // Add index for fast search on telNum\n}\n",
-  "inlineSchemaHash": "0cae999e0648aa351f37dd05b296bad3c735e8096af74f45cb491922dbe304ad",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider  = \"postgresql\"\n  url       = env(\"DATABASE_URL\")\n  directUrl = env(\"DIRECT_URL\")\n}\n\nmodel User {\n  id       Int    @id @default(autoincrement())\n  username String @unique\n  password String\n}\n\nmodel UploadedFile {\n  id          String      @id @default(cuid())\n  fileName    String\n  fileSize    Int // Size in bytes\n  recordCount Int\n  uploadDate  DateTime    @default(now())\n  status      String // e.g., \"completed\", \"processing\", \"failed\"\n  phoneData   PhoneData[]\n}\n\nmodel PhoneData {\n  id                       String  @id @default(cuid())\n  fileId                   String\n  telNum                   String\n  customTitle              String? // Optional field, can be null\n  classificationName       String?\n  parentClassificationName String?\n  city                     String?\n  address                  String?\n  regCity                  String?\n  regProvince              String?\n\n  uploadedFile UploadedFile @relation(fields: [fileId], references: [id], onDelete: Cascade)\n\n  @@index([telNum]) // Add index for fast search on telNum\n}\n",
+  "inlineSchemaHash": "9bdc7caa7e6dfe71053c4f17e68431a43da13b17d6d8f5ed4b798c86de298915",
   "copyEngine": true
 }
 config.dirname = '/'

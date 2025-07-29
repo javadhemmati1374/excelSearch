@@ -1,11 +1,8 @@
 // src/app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { QueryProvider } from "@/components/providers/QueryProvider"; // این را اضافه میکنیم
-
-const inter = Inter({ subsets: ["latin"] });
 
 const vazirmatn = localFont({
   src: [
@@ -35,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={`${inter.className} ${vazirmatn.className}`}>
+      <body className={`${vazirmatn.className}`}>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

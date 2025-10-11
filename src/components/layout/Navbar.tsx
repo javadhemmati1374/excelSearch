@@ -3,13 +3,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Shield, User, UserCheck } from "lucide-react";
 
 interface NavbarProps {
   username?: string;
+  role?: "ADMIN" | "USER";
 }
 
-export function Navbar({ username }: NavbarProps) {
+export function Navbar({ username, role }: NavbarProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -41,8 +42,10 @@ export function Navbar({ username }: NavbarProps) {
           </div>
           <div className="flex items-center space-x-4 space-x-reverse">
             <div className="flex items-center text-sm text-gray-500">
-              <User className="h-4 w-4 ml-1" />
-              <span>{username || "کاربر"}</span>
+              <div className="flex items-center justify-center">
+                <span>{username}</span>
+                <User className="h-5 w-5 mr-1" />
+              </div>
             </div>
             <Button
               variant="outline"

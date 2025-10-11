@@ -9,15 +9,15 @@ export default async function DashboardPage() {
   // استفاده از تابع getSession که cookies() را به درستی handle می‌کند
   const session = await getSession();
 
-  if (!session.isAdmin) {
-    redirect("/login"); // Fallback if middleware fails or session expires
+  if (!session.isAdmin && !session.role) {
+    redirect("/login");
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar username={session.username} />
+      <Navbar username={session.username} role={session.role} />
       <main className="flex-1 p-6">
-        <DashboardContent />
+        <DashboardContent userRole={session.role} />
       </main>
     </div>
   );

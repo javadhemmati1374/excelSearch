@@ -129,8 +129,8 @@ export function SearchSection() {
                         شماره تلفن
                       </TableHead>
                       <TableHead scope="col">عنوان اختصاصی</TableHead>
-                      <TableHead scope="col">نام دسته‌بندی</TableHead>
-                      <TableHead scope="col">دسته‌بندی والد</TableHead>
+                      <TableHead scope="col">زیر گروه</TableHead>
+                      <TableHead scope="col">گروه</TableHead>
                       <TableHead scope="col">شهر</TableHead>
                       <TableHead scope="col">آدرس</TableHead>
                       <TableHead scope="col">شهر ثبت</TableHead>

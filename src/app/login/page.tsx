@@ -93,6 +93,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm text-gray-600">
             <p>نام کاربری و رمز عبور پیش‌فرض: admin</p>
+            <p>کاربر - ایمیل: callcenter@me.com، رمز: 12348765</p>
           </div>
         </CardContent>
       </Card>

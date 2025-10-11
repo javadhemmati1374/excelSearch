@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 export interface SessionData {
   isAdmin: boolean;
   username: string;
+  role: "ADMIN" | "USER";
 }
 
 export const sessionOptions: SessionOptions = {

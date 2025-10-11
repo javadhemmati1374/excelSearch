@@ -49,11 +49,15 @@ export async function POST(request: Request) {
 
     // Set session
     const session = await getSession();
-    session.isAdmin = true;
+    session.isAdmin = user.role === "ADMIN";
     session.username = user.username;
+    session.role = user.role;
     await session.save();
 
-    return NextResponse.json({ message: "ورود موفقیت‌آمیز." }, { status: 200 });
+    return NextResponse.json(
+      { message: "ورود موفقیت‌آمیز.", role: user.role },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(

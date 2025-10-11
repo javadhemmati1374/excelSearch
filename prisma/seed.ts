@@ -1,4 +1,4 @@
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient, UserRole } from "../src/generated/prisma";
 import bcrypt from "bcryptjs";
 
 // مدیریت گلوبال PrismaClient مشابه سایر فایل‌ها
@@ -24,11 +24,30 @@ async function main() {
       data: {
         username: "admin",
         password: hashedPassword,
+        role: UserRole.ADMIN,
       },
     });
     console.log("Admin user created successfully!");
   } else {
     console.log("Admin user already exists.");
+  }
+
+  const existingCallCenter = await prisma.user.findUnique({
+    where: { username: "callcenter@me.com" },
+  });
+
+  if (!existingCallCenter) {
+    const hashedPassword = await bcrypt.hash("12348765", 10);
+    await prisma.user.create({
+      data: {
+        username: "callcenter@me.com",
+        password: hashedPassword,
+        role: UserRole.USER,
+      },
+    });
+    console.log("Call center user created successfully!");
+  } else {
+    console.log("Call center user already exists.");
   }
 }
 
